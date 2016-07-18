@@ -9,7 +9,6 @@ from frappe import _, throw
 @frappe.whitelist()
 
 def set_total_in_words(doc, method):
-    print("am i inside")
     from frappe.utils import money_in_words
     company_currency = get_company_currency(doc.company)
 
