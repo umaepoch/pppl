@@ -23,7 +23,4 @@ def set_total_in_words(doc, method):
     if doc.meta.get_field("amount_of_duty_in_words"):
         doc.amount_of_duty_in_words = money_in_words(disable_rounded_total and
             abs(doc.excise_amount) or abs(doc.excise_amount), doc.currency)
-    if doc.meta.get_field("vat_in_words"):
-        doc.vat_in_words = money_in_words(disable_rounded_total and
-            abs(doc.vat_amount) or abs(doc.vat_amount), doc.currency)
 
