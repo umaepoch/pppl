@@ -87,6 +87,10 @@ doc_events = {
              }
 }
 
+doctype_js = {
+       "Sales Invoice": ["sales_invoice_custom.js"]
+}
+
 # Scheduled Tasks
 # ---------------
 

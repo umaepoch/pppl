@@ -10,6 +10,10 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "umag@epochconsulting.in"
 app_license = "MIT"
+fixtures = ["Custom Field",
+"Property Setter",
+"Custom Script",
+"Report"]
 
 # Includes in <head>
 # ------------------
@@ -81,6 +85,10 @@ doc_events = {
        "Sales Invoice": {
                 "validate": "pppl.api.set_total_in_words"
              }
+}
+
+doctype_js = {
+       "Sales Invoice": ["sales_invoice_custom.js"]
 }
 
 # Scheduled Tasks
