@@ -1,0 +1,20 @@
+[
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Sales Invoice", 
+  "modified": "2016-07-26 17:21:38.493359", 
+  "name": "Sales Invoice-Client", 
+  "script": "var calculate_total_qty = function(frm) {\n\tvar total_qty = frappe.utils.sum(\n\t\t(frm.doc.items || []).map(function(i) { return i.qty; })\n\t);\n\t\n\tfrm.set_value(\"total_qty\", total_qty);\n}\n\nfrappe.ui.form.on(\"Sales Invoice Item\", \"qty\", function(frm, cdt, cdn) {\n\tcalculate_total_qty(frm, cdt, cdn);\n})\n\nfrappe.ui.form.on(\"Sales Invoice\", \"refresh\", function(frm) {\n  calculate_total_qty(frm);\n})\n\nfrappe.ui.form.on(\"Sales Invoice\", {\n    validate: function(frm) {\n\n      // calculate excise amount\n      \n      total_excise_amount = 0\n      total_vat_amount = 0\n      vat_percent = 0\n\n       if(frm.doc.taxes) {\n         $.each(frm.doc.taxes, function(i, d) {\n            var excise_amount = 0;\n            var vat_amount = 0;\n            \n             var tax_desc = d.description;\n          \n             if (tax_desc.search(\"Excise\")) {\n                                                              \n              } \n               else  {\n                 excise_amount = d.tax_amount;\n                 total_excise_amount += flt(d.tax_amount)\n\n               }\n          if (tax_desc.indexOf(\"VAT\") >= 0) {\n                              \n               vat_amount = d.tax_amount;\n               vat_percent = flt(d.rate)\n               total_vat_amount += flt(d.tax_amount)                             \n              }   \n               \n        });\n       }\n        \n        frappe.model.set_value(frm.doc.doctype, frm.doc.name, \"excise_amount\", total_excise_amount);\n        frappe.model.set_value(frm.doc.doctype, frm.doc.name, \"vat_amount\", total_vat_amount);\n        frappe.model.set_value(frm.doc.doctype, frm.doc.name, \"vat_percentage\", vat_percent);        \n    }\n   \n});", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Purchase Receipt", 
+  "modified": "2016-07-29 11:24:28.859781", 
+  "name": "Purchase Receipt-Client", 
+  "script": "          \nfrappe.ui.form.on(\"Purchase Receipt\", \"warehouse\", function(frm, cdt, cdn) {\n   \n      // warehouse code\n       if(frm.doc.warehouse) {\n         $.each(frm.doc.items, function(i, d) {\n      \n             var item = frappe.get_doc(i, d);\n             d.warehouse = frm.doc.warehouse;\n             d.cost_center = frm.doc.cost_center\n                       \n        });\n       }        \n});\n\nfrappe.ui.form.on(\"Purchase Receipt\", \"company\", function(frm, cdt, cdn) {\n   \n      // cost center\n       if(frm.doc.company) {\n         $.each(frm.doc.items, function(i, d) {\n      \n             var item = frappe.get_doc(i, d);\n             d.cost_center = frm.doc.cost_center;\n                       \n        });\n       }        \n});\n\n\n", 
+  "script_type": "Client"
+ }
+]
