@@ -119,10 +119,9 @@ def get_conditions(filters):
 		frappe.throw(_("'To Date' is required"))
 
 	if filters.get("item_code"):
-		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+		conditions += " and bi.item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
 
         if filters.get("bom"):
-                frappe.msgprint(_(bi.parent))
                 conditions += " and bi.parent = '%s'" % frappe.db.escape(filters.get("bom"), percent=False)
 
         if filters.get("company"):
@@ -141,9 +140,9 @@ def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""select bi.parent, bi.item_code, warehouse, posting_date, actual_qty, valuation_rate,
                         company, voucher_type, qty_after_transaction, stock_value_difference
-                from `tabStock Ledger Entry` sl, `tabBOM Item` bi 
-                where sl.docstatus < 2 and sl.item_code = bi.item_code %s order by bi.parent, bi.item_code, sl.name""" %
-                conditions, as_dict=1)
+                from `tabBOM Item` bi left outer join `tabStock Ledger Entry` sl
+                on bi.item_code = sl.item_code 
+                order by bi.parent, bi.item_code, sl.name""" as_dict=1)
 
 def get_item_warehouse_map(filters):
 	iwb_map = {}
@@ -151,8 +150,9 @@ def get_item_warehouse_map(filters):
 	to_date = getdate(filters["to_date"])
 
 	sle = get_stock_ledger_entries(filters)
-
+        frappe.msgprint(_(sle))
 	for d in sle:
+		frappe.msgprint(_(d))
                 key = (d.parent, d.item_code, d.warehouse)
                 if key not in iwb_map:
 			iwb_map[key] = frappe._dict({

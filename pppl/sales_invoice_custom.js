@@ -273,6 +273,16 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 
 	amount: function(){
 		this.write_off_outstanding_amount_automatically()
+	},
+
+	change_amount: function(){
+		if(this.frm.doc.paid_amount > this.frm.doc.grand_total){
+			this.calculate_write_off_amount()
+		}else {
+			this.frm.set_value("change_amount", 0.0)
+		}
+
+		this.frm.refresh_fields();
 	}
 });
 
@@ -465,25 +475,41 @@ cur_frm.set_query("asset", "items", function(doc, cdt, cdn) {
 frappe.ui.form.on('Sales Invoice', {
 	setup: function(frm){
 		frm.fields_dict["timesheets"].grid.get_field("time_sheet").get_query = function(doc, cdt, cdn){
-			return {
-				filters: [
-					["Timesheet", "status", "in", ["Submitted", "Payslip"]]
-				]
+			return{
+				query: "erpnext.projects.doctype.timesheet.timesheet.get_timesheet",
+				filters: {'project': doc.project}
 			}
 		}
 	},
-})
 
-frappe.ui.form.on('Sales Invoice Timesheet', {
-	time_sheet: function(frm){
+        project: function(frm){
 		frm.call({
-			method: "calculate_billing_amount_from_timesheet",
+			method: "add_timesheet_data",
 			doc: frm.doc,
 			callback: function(r, rt) {
-				refresh_field('total_billing_amount')
+				refresh_field(['timesheets'])
 			}
 		})
 	}
 })
 
-cur_frm.add_fetch("time_sheet", "total_billing_amount", "billing_amount");
+frappe.ui.form.on('Sales Invoice Timesheet', {
+	time_sheet: function(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		frappe.call({
+			method: "erpnext.projects.doctype.timesheet.timesheet.get_timesheet_data",
+			args: {
+				'name': d.time_sheet,
+				'project': frm.doc.project || null
+			},
+			callback: function(r, rt) {
+				if(r.message){
+					data = r.message;
+					frappe.model.set_value(cdt, cdn, "billing_hours", data.billing_hours);
+					frappe.model.set_value(cdt, cdn, "billing_amount", data.billing_amount);
+					frappe.model.set_value(cdt, cdn, "timesheet_detail", data.timesheet_detail);
+				}
+			}
+		})
+	}
+})
